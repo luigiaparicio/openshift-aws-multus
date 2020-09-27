@@ -46,6 +46,12 @@
   1. View Instances info
 
     $ aws ec2 describe-instances --region=us-east-2 --output table
+    
+    
+    We are gonna focus on machines inside Availability Zone "us-east-2a"
+    
+    $ aws ec2 describe-instances --filters "Name=availability-zone,Values=us-east-2a" \
+    --query "Reservations[].Instances[].{InstaneId:InstanceId}"
 
   2. Get Instance's NetworkInterface details
 
@@ -63,7 +69,8 @@
         ]
     ]
 
-  Only one NetworkInterface in this Instance, with IP 10.0.133.56
+  Result: Only one NetworkInterface in this Instance, with IP 10.0.133.56
+
 
 
   3. (Optional) You can just add a new Private IP to an existent interface
@@ -85,58 +92,46 @@
             }
         ]
     ]
-  
+
+  Notice that (only in this particular case) you'll have to config this new secondary IP on Node's Operating System. In this case RHCOS.
+
+
   4. Add new CIDR block to VPC
+  
+    Our new CIDR will be 10.2.0.0/16
+  
+  Create the new CIDR block:
   
     $ aws ec2 associate-vpc-cidr-block --vpc-id vpc-0b8fe5ab4a3d2095b --cidr-block 10.2.0.0/16
         
-    $ aws ec2 describe-vpcs --vpc-id vpc-0b8fe5ab4a3d2095b
-    {
-        "Vpcs": [
+ See the results:
+ 
+    $ aws ec2 describe-vpcs --vpc-id vpc-0b8fe5ab4a3d2095b  --query Vpcs[].CidrBlockAssociationSet
+    [
+        [
             {
-                "VpcId": "vpc-0b8fe5ab4a3d2095b",
-                "InstanceTenancy": "default",
-                "Tags": [
-                    {
-                        "Value": "cluster-9c2a-jlt54-vpc",
-                        "Key": "Name"
-                    },
-                    {
-                        "Value": "owned",
-                        "Key": "kubernetes.io/cluster/cluster-9c2a-jlt54"
-                    }
-                ],
-                "CidrBlockAssociationSet": [
-                    {
-                        "AssociationId": "vpc-cidr-assoc-07fbd8750573fcf70",
-                        "CidrBlock": "10.0.0.0/16",
-                        "CidrBlockState": {
-                             "State": "associated"
-                        }
-                    },
-                    {
-                        "AssociationId": "vpc-cidr-assoc-0f349b1a1e1eaa329",
-                        "CidrBlock": "10.2.0.0/16",
-                        "CidrBlockState": {
-                             "State": "associated"
-                        }
-                    }
-                ],
-                "State": "available",
-                "DhcpOptionsId": "dopt-0b85ee5967b6e605d",
-                "OwnerId": "588831808095",
+                "AssociationId": "vpc-cidr-assoc-07fbd8750573fcf70",
                 "CidrBlock": "10.0.0.0/16",
-                "IsDefault": false
+                "CidrBlockState": {
+                    "State": "associated"
+                }
+            },
+            {
+                "AssociationId": "vpc-cidr-assoc-0f349b1a1e1eaa329",
+                "CidrBlock": "10.2.0.0/16",
+                "CidrBlockState": {
+                    "State": "associated"
+                }
             }
         ]
-    }
-  
-  
+    ]
+
+
   5. Create new Subnet
   
-  Pick the right Availability Zone name (see step 2 above)
+    So lets create the subnet 10.2.30.0/24 (that's inside our new CIDR block 10.2.0.0/16)
   
-      $ aws ec2 create-subnet --vpc-id vpc-0b8fe5ab4a3d2095b --cidr-block 10.2.30.0/24 --availability-zone us-east-2a
+    $ aws ec2 create-subnet --vpc-id vpc-0b8fe5ab4a3d2095b --cidr-block 10.2.30.0/24 --availability-zone us-east-2a
 
     {
         "Subnet": {
@@ -158,27 +153,27 @@
 
   6. Create new network interface
   
-  Pick Subnet Id from previous step
+  For this step you'll need Subnet Id from previous step
   
     $ aws ec2 create-network-interface --subnet-id subnet-0e01befdff050008a --description "my network interface"
-
+    
     {
         "NetworkInterface": {
             "Status": "pending",
-            "MacAddress": "02:fb:7b:dd:a2:92",
+            "MacAddress": "02:38:93:ff:10:60",
             "SourceDestCheck": true,
             "AvailabilityZone": "us-east-2a",
             "Description": "my network interface",
-            "NetworkInterfaceId": "eni-0db2ba590ecd24f56",
+            "NetworkInterfaceId": "eni-0a4803d1711b59281",
             "PrivateIpAddresses": [
                 {
-                    "PrivateDnsName": "ip-10-2-30-219.us-east-2.compute.internal",
+                    "PrivateDnsName": "ip-10-2-30-155.us-east-2.compute.internal",
                     "Primary": true,
-                    "PrivateIpAddress": "10.2.30.219"
+                    "PrivateIpAddress": "10.2.30.155"
                 }
             ],
             "RequesterManaged": false,
-            "PrivateDnsName": "ip-10-2-30-219.us-east-2.compute.internal",
+            "PrivateDnsName": "ip-10-2-30-155.us-east-2.compute.internal",
             "VpcId": "vpc-0b8fe5ab4a3d2095b",
             "InterfaceType": "interface",
             "RequesterId": "AIDAYSGI4LJPSSBJVUN2U",
@@ -192,46 +187,65 @@
             "OwnerId": "588831808095",
             "SubnetId": "subnet-0e01befdff050008a",
             "TagSet": [],
-            "PrivateIpAddress": "10.2.30.219"
+            "PrivateIpAddress": "10.2.30.155"
         }
     }
     
     
   7. Attach new Network Interface to VM Instance
 
-    $ aws ec2 attach-network-interface --network-interface-id eni-0db2ba590ecd24f56 --instance-id i-0103cd5c3d3e069bb --device-index 2
+    $ aws ec2 attach-network-interface --network-interface-id eni-0a4803d1711b59281 --instance-id i-0aa3b767615340d56 --device-index 1
     
     {
-    "AttachmentId": "eni-attach-08ae3e6ade89d01c8"
+        "AttachmentId": "eni-attach-04c452afed7462b8d"
     }
+
+    See the results, new interface attached to instance, with IP 10.2.30.155:
     
-    $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
+    $ aws ec2 describe-instances --instance-ids i-0aa3b767615340d5 --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
     
     [
         [
             {
-                "PrivateDnsName": "ip-10-0-150-203.us-east-2.compute.internal",
+                "PrivateDnsName": "ip-10-0-133-56.us-east-2.compute.internal",
                 "Primary": true,
-                "PrivateIpAddress": "10.0.150.203"
-            },
-            {
-                "PrivateDnsName": "ip-10-0-152-75.us-east-2.compute.internal",
-                "Primary": false,
-                "PrivateIpAddress": "10.0.152.75"
+                "PrivateIpAddress": "10.0.133.56"
             }
         ],
         [
             {
-                "PrivateDnsName": "ip-10-2-30-219.us-east-2.compute.internal",
+                "PrivateDnsName": "ip-10-2-30-155.us-east-2.compute.internal",
                 "Primary": true,
-                "PrivateIpAddress": "10.2.30.219"
+                "PrivateIpAddress": "10.2.30.155"
             }
         ]
     ]
-    
+
+  8. Show me my new NIC
+  
+    $ oc debug node/ip-10-0-133-56.us-east-2.compute.internal
+    Starting pod/ip-10-0-133-56us-east-2computeinternal-debug ...
+    To use host binaries, run `chroot /host`
+    Pod IP: 10.0.133.56
+    If you don't see a command prompt, try pressing enter.
+    sh-4.2# ip r
+    default via 10.0.128.1 dev ens3 proto dhcp metric 100
+    default via 10.2.30.1 dev ens4 proto dhcp metric 101
+    10.0.128.0/19 dev ens3 proto kernel scope link src 10.0.133.56 metric 100
+    10.2.30.0/24 dev ens4 proto kernel scope link src 10.2.30.155 metric 101
+    10.128.0.0/14 dev tun0 scope link
+    172.30.0.0/16 dev tun0    
+
+  Done!, that's it!
+  
+  Now you can continue to add more interfaces to other Nodes
+
+
+
+
 ## Attach new network interfaces to the rest of the Nodes
   
-  You can continue adding a new network interface to the other Nodes in the OCP Cluster
+  You can continue adding new network interfaces to the other Nodes in the OCP Cluster
   
 
 #### Create new interface 
