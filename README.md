@@ -102,4 +102,43 @@
 
   ## 6) Create new network interface
   
-      $ aws ec2 create-network-interface --subnet-id subnet-9d4a7b6c --description "my network interface" --groups sg-903004f8 --private-ip-address 10.0.2.17
+  Pick Subnet Id from previous step
+  
+    $ aws ec2 create-network-interface --subnet-id subnet-0e01befdff050008a --description "my network interface"
+
+    {
+        "NetworkInterface": {
+            "Status": "pending",
+            "MacAddress": "02:fb:7b:dd:a2:92",
+            "SourceDestCheck": true,
+            "AvailabilityZone": "us-east-2a",
+            "Description": "my network interface",
+            "NetworkInterfaceId": "eni-0db2ba590ecd24f56",
+            "PrivateIpAddresses": [
+                {
+                    "PrivateDnsName": "ip-10-2-30-219.us-east-2.compute.internal",
+                    "Primary": true,
+                    "PrivateIpAddress": "10.2.30.219"
+                }
+            ],
+            "RequesterManaged": false,
+            "PrivateDnsName": "ip-10-2-30-219.us-east-2.compute.internal",
+            "VpcId": "vpc-0b8fe5ab4a3d2095b",
+            "InterfaceType": "interface",
+            "RequesterId": "AIDAYSGI4LJPSSBJVUN2U",
+            "Groups": [
+                {
+                    "GroupName": "default",
+                    "GroupId": "sg-0eea8477dae0eeda8"
+                }
+            ],
+            "Ipv6Addresses": [],
+            "OwnerId": "588831808095",
+            "SubnetId": "subnet-0e01befdff050008a",
+            "TagSet": [],
+            "PrivateIpAddress": "10.2.30.219"
+        }
+    }
+    
+    
+    
