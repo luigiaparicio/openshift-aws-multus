@@ -196,7 +196,7 @@
     ip-10-0-212-213.us-east-2.compute.internal   Ready    master   166m   v1.18.3+47c0e71
     ip-10-0-219-114.us-east-2.compute.internal   Ready    worker   155m   v1.18.3+47c0e71
     
-    #### Identify the Node's Instance Id in AWS
+  #### Identify the Node's Instance Id in AWS
     
     $ aws ec2 describe-instances --query "Reservations[].Instances[].{InstaneId:InstanceId,PrivateDnsName:PrivateDnsName}"
     
@@ -230,3 +230,30 @@
           "PrivateDnsName": "ip-10-0-150-203.us-east-2.compute.internal"
       }
     ]
+
+
+    $ aws ec2 describe-instances --filters "Name=availability-zone,Values=us-east-2a" \
+    --query "Reservations[].Instances[].{InstaneId:InstanceId,PrivateDnsName:PrivateDnsName}"
+    
+    [
+        {
+            "InstaneId": "i-0aa3b767615340d56",
+            "PrivateDnsName": "ip-10-0-133-56.us-east-2.compute.internal"
+        },
+        {
+            "InstaneId": "i-0c07ca328279340cf",
+            "PrivateDnsName": "ip-10-0-133-117.us-east-2.compute.internal"
+        },
+        {
+            "InstaneId": "i-0ee574517afd2739c",
+            "PrivateDnsName": "ip-10-0-153-175.us-east-2.compute.internal"
+        },
+        {
+            "InstaneId": "i-0103cd5c3d3e069bb",
+            "PrivateDnsName": "ip-10-0-150-203.us-east-2.compute.internal"
+        }
+    ]
+
+#### Attach the new interface
+
+    $ aws ec2 
