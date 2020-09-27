@@ -2,23 +2,29 @@
 
 ### Prerequisites:
   
-  - OpenShift Container Platform 4.4 or later (IPI deploy)
+  - OpenShift Container Platform 4.3 or later (IPI deploy)
   - AWS CLI
 
+### Know before you start...
 
-## Step by step
+  - In this example we chose "m4.large" Instance Type for our Worker Nodes, and its maximun number of network interfaces is 2 (two). Choose another Instance Type for your machines if you need more interfaces. See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
+  
 
-  1. Show AWS instances
+## How to add new Interfaces to your Machines
+
+### First, take a look around...
+
+  1. Show AWS Instances
 
     $ aws ec2 describe-instances --region=us-east-2 --output table
 
-  2. Describe AWS specific Instance
+  2. Get an Instance details
 
     $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb 
   
     $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
 
-  3. Add new Private IP to AWS instance
+  3. (Optional) You can just add a new Private IP to an existent interface
 
     $ aws ec2 assign-private-ip-addresses --network-interface-id eni-0d61b77c3ca6ab811 --secondary-private-ip-address-count 1
   
