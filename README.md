@@ -9,20 +9,62 @@
 
   - In this example we chose "m4.large" Instance Type for our Worker Nodes, and its maximun number of network interfaces is 2 (two). Choose another Instance Type for your machines if you need more interfaces. See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
   
+  
+### AWS CLI setup
+
+  An example to setup your AWS CLI config
+
+    export AWSKEY=<YOURACCESSKEY>
+    export AWSSECRETKEY=<YOURSECRETKEY>
+    export REGION=us-east-2
+
+    mkdir $HOME/.aws
+    cat << EOF >>  $HOME/.aws/credentials
+    [default]
+    aws_access_key_id = ${AWSKEY}
+    aws_secret_access_key = ${AWSSECRETKEY}
+    region = $REGION
+    EOF
+    
+  Test your connection:
+  
+    $ aws sts get-caller-identity
+    
+  Sample output...
+   
+    {
+        "Account": "588831877095",
+        "UserId": "AIDALPAI4LLPASBJVUN2U",
+        "Arn": "arn:aws:iam::588831877095:user/laparici@redhat.com-9c2a"
+    }
+  
 
 ## How to add new Interfaces to your Machines
 
 ### First, take a look around...
 
-  1. Show AWS Instances
+  1. View Instances info
 
     $ aws ec2 describe-instances --region=us-east-2 --output table
 
-  2. Get an Instance details
+  2. Get Instance's NetworkInterface details
 
-    $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb 
+    $ aws ec2 describe-instances --instance-ids i-0aa3b767615340d56
   
-    $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
+    $ aws ec2 describe-instances --instance-ids i-0aa3b767615340d56 --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
+
+    [
+        [
+            {
+                "PrivateDnsName": "ip-10-0-133-56.us-east-2.compute.internal",
+                "Primary": true,
+                "PrivateIpAddress": "10.0.133.56"
+            }
+        ]
+    ]
+
+  Only one NetworkInterface in this Instance, with IP 10.0.133.56
+
 
   3. (Optional) You can just add a new Private IP to an existent interface
 
