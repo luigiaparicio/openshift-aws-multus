@@ -141,4 +141,33 @@
     }
     
     
+## Attach new Network Interface to VM Instance
+
+    $ aws ec2 attach-network-interface --network-interface-id eni-0db2ba590ecd24f56 --instance-id i-0103cd5c3d3e069bb --device-index 2
+    {
+    "AttachmentId": "eni-attach-08ae3e6ade89d01c8"
+    }
+    
+    $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
+    [
+        [
+            {
+                "PrivateDnsName": "ip-10-0-150-203.us-east-2.compute.internal",
+                "Primary": true,
+                "PrivateIpAddress": "10.0.150.203"
+            },
+            {
+                "PrivateDnsName": "ip-10-0-152-75.us-east-2.compute.internal",
+                "Primary": false,
+                "PrivateIpAddress": "10.0.152.75"
+            }
+        ],
+        [
+            {
+                "PrivateDnsName": "ip-10-2-30-219.us-east-2.compute.internal",
+                "Primary": true,
+                "PrivateIpAddress": "10.2.30.219"
+            }
+        ]
+    ]
     
