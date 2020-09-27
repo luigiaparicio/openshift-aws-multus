@@ -181,57 +181,64 @@
         ]
     ]
     
-  ## Attach new network interfaces to the rest of the Nodes
+## Attach new network interfaces to the rest of the Nodes
   
   You can continue adding a new network interface to the other Nodes in the OCP Cluster
   
-  #### List your Nodes
+
+#### Create new interface 
+
+    $ aws ec2 create-network-interface --subnet-id subnet-0e01befdff050008a --description "my network interface"
+    {
+        "NetworkInterface": {
+            "Status": "pending",
+            "MacAddress": "02:bd:b5:b7:82:b8",
+            "SourceDestCheck": true,
+            "AvailabilityZone": "us-east-2a",
+            "Description": "my network interface",
+            "NetworkInterfaceId": "eni-0c9e3d7992faaa308",
+            "PrivateIpAddresses": [
+                {
+                    "PrivateDnsName": "ip-10-2-30-170.us-east-2.compute.internal",
+                    "Primary": true,
+                    "PrivateIpAddress": "10.2.30.170"
+                }
+            ],
+            "RequesterManaged": false,
+            "PrivateDnsName": "ip-10-2-30-170.us-east-2.compute.internal",
+            "VpcId": "vpc-0b8fe5ab4a3d2095b",
+            "InterfaceType": "interface",
+            "RequesterId": "AIDAYSGI4LJPSSBJVUN2U",
+            "Groups": [
+                {
+                    "GroupName": "default",
+                    "GroupId": "sg-0eea8477dae0eeda8"
+                }
+            ],
+            "Ipv6Addresses": [],
+            "OwnerId": "588831808095",
+            "SubnetId": "subnet-0e01befdff050008a",
+            "TagSet": [],
+            "PrivateIpAddress": "10.2.30.170"
+        }
+    }
+
+
+#### List your Nodes
     
     $ oc get nodes
     NAME                                         STATUS   ROLES    AGE    VERSION
-    ip-10-0-133-117.us-east-2.compute.internal   Ready    worker   155m   v1.18.3+47c0e71
-    ip-10-0-150-203.us-east-2.compute.internal   Ready    master   166m   v1.18.3+47c0e71
-    ip-10-0-171-48.us-east-2.compute.internal    Ready    worker   154m   v1.18.3+47c0e71
-    ip-10-0-177-26.us-east-2.compute.internal    Ready    master   166m   v1.18.3+47c0e71
-    ip-10-0-212-213.us-east-2.compute.internal   Ready    master   166m   v1.18.3+47c0e71
-    ip-10-0-219-114.us-east-2.compute.internal   Ready    worker   155m   v1.18.3+47c0e71
-    
-  #### Identify the Node's Instance Id in AWS
-    
-    $ aws ec2 describe-instances --query "Reservations[].Instances[].{InstaneId:InstanceId,PrivateDnsName:PrivateDnsName}"
-    
-    [
-      {
-          "InstaneId": "i-0c07ca328279340cf",
-          "PrivateDnsName": "ip-10-0-133-117.us-east-2.compute.internal"
-      },
-      {
-          "InstaneId": "i-03fca3b79eafae383",
-          "PrivateDnsName": "ip-10-0-219-114.us-east-2.compute.internal"
-      },
-      {
-          "InstaneId": "i-0768800ada2f37856",
-          "PrivateDnsName": "ip-10-0-171-48.us-east-2.compute.internal"
-      },
-      {
-          "InstaneId": "i-0b1a2b71452eb2c1d",
-          "PrivateDnsName": "ip-10-0-212-213.us-east-2.compute.internal"
-      },
-      {
-          "InstaneId": "i-068585306280fbe10",
-          "PrivateDnsName": "ip-10-0-177-26.us-east-2.compute.internal"
-      },
-      {
-          "InstaneId": "i-04c55c892ec2c95ff",
-          "PrivateDnsName": "ip-192-168-0-125.us-east-2.compute.internal"
-      },
-      {
-          "InstaneId": "i-0103cd5c3d3e069bb",
-          "PrivateDnsName": "ip-10-0-150-203.us-east-2.compute.internal"
-      }
-    ]
+    ip-10-0-133-117.us-east-2.compute.internal   Ready    worker   3h13m   v1.18.3+47c0e71
+    ip-10-0-133-56.us-east-2.compute.internal    Ready    worker   6m27s   v1.18.3+47c0e71
+    ip-10-0-150-203.us-east-2.compute.internal   Ready    master   3h24m   v1.18.3+47c0e71
+    ip-10-0-153-175.us-east-2.compute.internal   Ready    worker   6m27s   v1.18.3+47c0e71
+    ip-10-0-171-48.us-east-2.compute.internal    Ready    worker   3h13m   v1.18.3+47c0e71
+    ip-10-0-177-26.us-east-2.compute.internal    Ready    master   3h24m   v1.18.3+47c0e71
+    ip-10-0-212-213.us-east-2.compute.internal   Ready    master   3h24m   v1.18.3+47c0e71
+    ip-10-0-219-114.us-east-2.compute.internal   Ready    worker   3h13m   v1.18.3+47c0e71
 
-
+#### Identify the Node's Instance Id in AWS
+    
     $ aws ec2 describe-instances --filters "Name=availability-zone,Values=us-east-2a" \
     --query "Reservations[].Instances[].{InstaneId:InstanceId,PrivateDnsName:PrivateDnsName}"
     
@@ -256,4 +263,27 @@
 
 #### Attach the new interface
 
-    $ aws ec2 
+    aws ec2 attach-network-interface --network-interface-id eni-0c9e3d7992faaa308 --instance-id i-0ee574517afd2739c --device-index 1
+    {
+        "AttachmentId": "eni-attach-01487f52c832c3fcb"
+    }
+    
+#### The new NIC inside the Node
+
+  And there it is! New "ens4" interface with IP 10.2.30.170
+
+    $ oc debug node/ip-10-0-153-175.us-east-2.compute.internal
+    Starting pod/ip-10-0-153-175us-east-2computeinternal-debug ...
+    To use host binaries, run `chroot /host`
+    Pod IP: 10.0.153.175
+    If you don't see a command prompt, try pressing enter.
+    sh-4.2# ip r
+    default via 10.0.128.1 dev ens3 proto dhcp metric 100
+    default via 10.2.30.1 dev ens4 proto dhcp metric 101
+    10.0.128.0/19 dev ens3 proto kernel scope link src 10.0.153.175 metric 100
+    10.2.30.0/24 dev ens4 proto kernel scope link src 10.2.30.170 metric 101
+    10.128.0.0/14 dev tun0 scope link
+    172.30.0.0/16 dev tun0
+    sh-4.2#
+    
+    
