@@ -1,17 +1,17 @@
 # openshift-aws-multus
 
 
-## Show AWS instances
+## 1) Show AWS instances
 
     $ aws ec2 describe-instances --region=us-east-2 --output table
 
-## Describe AWS specific Instance
+## 2) Describe AWS specific Instance
 
     $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb 
   
     $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
 
-## Add new Private IP to AWS instance
+## 3) Add new Private IP to AWS instance
 
     $ aws ec2 assign-private-ip-addresses --network-interface-id eni-0d61b77c3ca6ab811 --secondary-private-ip-address-count 1
   
@@ -31,7 +31,7 @@
         ]
     ]
   
-  ## Add new CIDR block to VPC
+  ## 4) Add new CIDR block to VPC
     $ aws ec2 associate-vpc-cidr-block --vpc-id vpc-0b8fe5ab4a3d2095b --cidr-block 10.2.0.0/16
         
     $ aws ec2 describe-vpcs --vpc-id vpc-0b8fe5ab4a3d2095b
@@ -76,11 +76,30 @@
     }
   
   
-  ## Add new Subnet
+  ## 5) Create new Subnet
   
+  Pick the right Availability Zone name (see step 2 above)
   
-          fffffff
-  
-  ## Create new network interface
+      $ aws ec2 create-subnet --vpc-id vpc-0b8fe5ab4a3d2095b --cidr-block 10.2.30.0/24 --availability-zone us-east-2a
+
+    {
+        "Subnet": {
+            "MapPublicIpOnLaunch": false,
+            "AvailabilityZoneId": "use2-az1",
+            "AvailableIpAddressCount": 251,
+            "DefaultForAz": false,
+            "SubnetArn": "arn:aws:ec2:us-east-2:588831808095:subnet/subnet-0e01befdff050008a",
+            "Ipv6CidrBlockAssociationSet": [],
+            "VpcId": "vpc-0b8fe5ab4a3d2095b",
+            "State": "available",
+            "AvailabilityZone": "us-east-2a",
+            "SubnetId": "subnet-0e01befdff050008a",
+            "OwnerId": "588831808095",
+            "CidrBlock": "10.2.30.0/24",
+            "AssignIpv6AddressOnCreation": false
+        }
+    }
+
+  ## 6) Create new network interface
   
       $ aws ec2 create-network-interface --subnet-id subnet-9d4a7b6c --description "my network interface" --groups sg-903004f8 --private-ip-address 10.0.2.17
