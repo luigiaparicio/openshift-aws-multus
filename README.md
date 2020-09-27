@@ -39,6 +39,7 @@
     ]
   
   4. Add new CIDR block to VPC
+  
     $ aws ec2 associate-vpc-cidr-block --vpc-id vpc-0b8fe5ab4a3d2095b --cidr-block 10.2.0.0/16
         
     $ aws ec2 describe-vpcs --vpc-id vpc-0b8fe5ab4a3d2095b
@@ -180,3 +181,52 @@
         ]
     ]
     
+  ## Attach new network interfaces to the rest of the Nodes
+  
+  You can continue adding a new network interface to the other Nodes in the OCP Cluster
+  
+  #### List your Nodes
+    
+    $ oc get nodes
+    NAME                                         STATUS   ROLES    AGE    VERSION
+    ip-10-0-133-117.us-east-2.compute.internal   Ready    worker   155m   v1.18.3+47c0e71
+    ip-10-0-150-203.us-east-2.compute.internal   Ready    master   166m   v1.18.3+47c0e71
+    ip-10-0-171-48.us-east-2.compute.internal    Ready    worker   154m   v1.18.3+47c0e71
+    ip-10-0-177-26.us-east-2.compute.internal    Ready    master   166m   v1.18.3+47c0e71
+    ip-10-0-212-213.us-east-2.compute.internal   Ready    master   166m   v1.18.3+47c0e71
+    ip-10-0-219-114.us-east-2.compute.internal   Ready    worker   155m   v1.18.3+47c0e71
+    
+    #### Identify the Node's Instance Id in AWS
+    
+    $ aws ec2 describe-instances --query "Reservations[].Instances[].{InstaneId:InstanceId,PrivateDnsName:PrivateDnsName}"
+    
+    [
+      {
+          "InstaneId": "i-0c07ca328279340cf",
+          "PrivateDnsName": "ip-10-0-133-117.us-east-2.compute.internal"
+      },
+      {
+          "InstaneId": "i-03fca3b79eafae383",
+          "PrivateDnsName": "ip-10-0-219-114.us-east-2.compute.internal"
+      },
+      {
+          "InstaneId": "i-0768800ada2f37856",
+          "PrivateDnsName": "ip-10-0-171-48.us-east-2.compute.internal"
+      },
+      {
+          "InstaneId": "i-0b1a2b71452eb2c1d",
+          "PrivateDnsName": "ip-10-0-212-213.us-east-2.compute.internal"
+      },
+      {
+          "InstaneId": "i-068585306280fbe10",
+          "PrivateDnsName": "ip-10-0-177-26.us-east-2.compute.internal"
+      },
+      {
+          "InstaneId": "i-04c55c892ec2c95ff",
+          "PrivateDnsName": "ip-192-168-0-125.us-east-2.compute.internal"
+      },
+      {
+          "InstaneId": "i-0103cd5c3d3e069bb",
+          "PrivateDnsName": "ip-10-0-150-203.us-east-2.compute.internal"
+      }
+    ]
