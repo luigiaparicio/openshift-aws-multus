@@ -1,17 +1,24 @@
-# openshift-aws-multus
+# Using multiple network interfaces in OpenShift on AWS
+
+### Prerequisites:
+  
+  - OpenShift Container Platform 4.4 or later (IPI deploy)
+  - AWS CLI
 
 
-## 1) Show AWS instances
+## Step by step
+
+  1. Show AWS instances
 
     $ aws ec2 describe-instances --region=us-east-2 --output table
 
-## 2) Describe AWS specific Instance
+  2. Describe AWS specific Instance
 
     $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb 
   
     $ aws ec2 describe-instances --instance-ids i-0103cd5c3d3e069bb --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
 
-## 3) Add new Private IP to AWS instance
+  3. Add new Private IP to AWS instance
 
     $ aws ec2 assign-private-ip-addresses --network-interface-id eni-0d61b77c3ca6ab811 --secondary-private-ip-address-count 1
   
@@ -31,7 +38,7 @@
         ]
     ]
   
-  ## 4) Add new CIDR block to VPC
+  4. Add new CIDR block to VPC
     $ aws ec2 associate-vpc-cidr-block --vpc-id vpc-0b8fe5ab4a3d2095b --cidr-block 10.2.0.0/16
         
     $ aws ec2 describe-vpcs --vpc-id vpc-0b8fe5ab4a3d2095b
@@ -76,7 +83,7 @@
     }
   
   
-  ## 5) Create new Subnet
+  5. Create new Subnet
   
   Pick the right Availability Zone name (see step 2 above)
   
@@ -100,7 +107,7 @@
         }
     }
 
-  ## 6) Create new network interface
+  6. Create new network interface
   
   Pick Subnet Id from previous step
   
@@ -141,7 +148,7 @@
     }
     
     
-## Attach new Network Interface to VM Instance
+7. Attach new Network Interface to VM Instance
 
     $ aws ec2 attach-network-interface --network-interface-id eni-0db2ba590ecd24f56 --instance-id i-0103cd5c3d3e069bb --device-index 2
     {
