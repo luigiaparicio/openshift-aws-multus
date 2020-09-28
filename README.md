@@ -348,4 +348,53 @@
     172.30.0.0/16 dev tun0
     sh-4.2#
     
+  
+## Pods with additional interface
+
+  #### Create new Project/Namespace
+
+    $ oc new-project test-new-nic
     
+  #### Add Node Selector to nodes and Namespace
+  
+  For Namespace add this annotation:
+    
+    ...
+    annotations:
+      openshift.io/node-selector: "test-new-nic=true"
+    ...
+    
+    
+  And label the nodes that have the new interface "ens4"
+  
+  
+    $ oc label node ip-10-0-153-175.us-east-2.compute.internal ip-10-0-133-56.us-east-2.compute.internal test-new-nic=true
+    
+    
+  #### Config Namespace Additional Network
+  
+    $ oc edit networks.operators
+    
+    ...
+    spec:
+      additionalNetworks:
+        - name: test-new-nic
+          namespace: test-new-nic
+          rawCNIConfig: '{ "cniVersion": "0.3.1", "type": "macvlan", "capabilities": { "ips": true }, "master": "ens4", "mode": "bridge", "ipam": { "type": "static" } }'
+          type: Raw
+      clusterNetwork:
+    ...
+
+  Switch to Project test-new-nic and list your NetworkAttachmentDefinitions:
+
+    oc get network-attachment-definitions
+    NAME           AGE
+    test-new-nic   79s
+
+
+oc create serviceaccount -n test-new-nic privilegeduser
+serviceaccount/privilegeduser created
+
+ oc adm policy add-scc-to-user privileged -n test-new-nic -z privilegeduser
+clusterrole.rbac.authorization.k8s.io/system:openshift:scc:privileged added: "privilegeduser"
+
