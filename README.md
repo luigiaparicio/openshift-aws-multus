@@ -202,7 +202,7 @@
 
     See the results, new interface attached to instance, with IP 10.2.30.155:
     
-    $ aws ec2 describe-instances --instance-ids i-0aa3b767615340d5 --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
+    $ aws ec2 describe-instances --instance-ids i-0aa3b767615340d56 --query 'Reservations[].Instances[].NetworkInterfaces[].PrivateIpAddresses'
     
     [
         [
@@ -373,6 +373,8 @@
     
   #### Config Namespace Additional Network
   
+  Note that in AWS environments, macvlan traffic might be filtered and, therefore, might not reach the desired destination. Use ipval type instead, for example
+  
     $ oc edit networks.operators
     
     ...
@@ -397,4 +399,10 @@ serviceaccount/privilegeduser created
 
  oc adm policy add-scc-to-user privileged -n test-new-nic -z privilegeduser
 clusterrole.rbac.authorization.k8s.io/system:openshift:scc:privileged added: "privilegeduser"
+
+
+
+
+
+
 
