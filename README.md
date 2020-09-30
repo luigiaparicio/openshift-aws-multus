@@ -402,7 +402,14 @@ clusterrole.rbac.authorization.k8s.io/system:openshift:scc:privileged added: "pr
 
 
 
+## (WIP) AWS CNI
 
+    apiVersion: "k8s.cni.cncf.io/v1"
+    kind: NetworkAttachmentDefinition
+    metadata:
+      name: aws
+    spec:
+      config: '{"cniVersion":"0.3.0","name":"aws-cni","type":"aws-cni","vethPrefix":"eni"}'
 
 
 
